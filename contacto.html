@@ -13,6 +13,18 @@
     href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;1,400&family=Work+Sans:wght@400;500;600;700&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
+  <script>async function testSlots() {
+      const { data, error } = await supabase
+        .from('appointments_slots_public')
+        .select('*')
+        .limit(10);
+
+      console.log(data);
+      console.error(error);
+    }
+
+    testSlots();</script>
+
 </head>
 
 <body>
@@ -66,8 +78,9 @@
       <div class="container contact-grid">
         <div>
           <h3>Reserva tu sesión directamente</h3>
-          <p style="margin-bottom: 2rem; color: #555;">Elige la fecha y hora que mejor te venga. Mi calendario se sincroniza automáticamente para mostrarte solo los huecos disponibles.</p>
-          
+          <p style="margin-bottom: 2rem; color: #555;">Elige la fecha y hora que mejor te venga. Mi calendario se
+            sincroniza automáticamente para mostrarte solo los huecos disponibles.</p>
+
           <div class="booking-widget">
             <div class="booking-step" id="booking-step-1">
               <label for="booking-date" class="booking-label">1. Selecciona una fecha:</label>
@@ -76,7 +89,8 @@
             </div>
 
             <div class="booking-step" id="booking-form-container" style="display: none; margin-top: 2rem;">
-              <h4 style="margin-bottom: 1rem; color: var(--primary);">2. Completa tus datos para el <span id="selected-date-str"></span> a las <span id="selected-time-str"></span></h4>
+              <h4 style="margin-bottom: 1rem; color: var(--primary);">2. Completa tus datos para el <span
+                  id="selected-date-str"></span> a las <span id="selected-time-str"></span></h4>
               <form id="booking-form" novalidate>
                 <div class="form-field">
                   <label for="b-nombre">Nombre *</label>

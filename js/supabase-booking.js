@@ -1,6 +1,6 @@
 const SUPABASE_URL = 'https://qgcywuzantcgoitrybwb.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_DtYokgl1tTfps9MslC41LQ_l5SdvBG3';
-const PROFESSIONAL_ID = 1; // TODO: Cambiar por tu ID real
+const PROFESSIONAL_ID = "a6be4177-3195-4885-a27c-0a7259ce1858"; // TODO: Cambiar por tu ID real
 
 // Inicializar Supabase si la librería está cargada
 let supabase = null;
@@ -27,7 +27,7 @@ async function getSlotsOcupados(professionalId, fromISO, toISO) {
 async function getOrCreatePatient({ first_name, last_name, email, phone }) {
   // Generar un DNI ficticio basado en el email o teléfono para saltar la restricción NOT NULL
   const dummyDni = email || phone || `anon_${Date.now()}`;
-  
+
   const { data: existing } = await supabase
     .from('patients')
     .select('id')
@@ -86,18 +86,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const today = new Date();
   // Formatear hoy como YYYY-MM-DD
   const offset = today.getTimezoneOffset()
-  const todayStr = new Date(today.getTime() - (offset*60*1000)).toISOString().split('T')[0];
+  const todayStr = new Date(today.getTime() - (offset * 60 * 1000)).toISOString().split('T')[0];
   dateInput.min = todayStr;
 
   dateInput.addEventListener('change', async (e) => {
     const selectedDateStrVal = e.target.value;
     if (!selectedDateStrVal) return;
-    
+
     // Al usar input type=date, el valor viene en YYYY-MM-DD, que se interpreta como UTC si usamos new Date()
     // Lo ideal es parsearlo considerando la zona horaria local o forzarlo.
     const [y, m, d] = selectedDateStrVal.split('-');
-    const selectedDate = new Date(parseInt(y), parseInt(m)-1, parseInt(d));
-    
+    const selectedDate = new Date(parseInt(y), parseInt(m) - 1, parseInt(d));
+
     // No permitir fines de semana
     if (selectedDate.getDay() === 0 || selectedDate.getDay() === 6) {
       slotsContainer.innerHTML = '<p class="form-error">Por favor, selecciona un día de lunes a viernes.</p>';
@@ -123,21 +123,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Consultar ocupados
     const fromDate = new Date(selectedDate);
-    fromDate.setHours(0,0,0,0);
+    fromDate.setHours(0, 0, 0, 0);
     const toDate = new Date(selectedDate);
-    toDate.setHours(23,59,59,999);
-    
+    toDate.setHours(23, 59, 59, 999);
+
     // Asegurarse de que mandamos UTC a supabase, ya que toISOString() convierte a UTC
     const fromISO = fromDate.toISOString();
     const toISO = toDate.toISOString();
-    
+
     const ocupados = await getSlotsOcupados(PROFESSIONAL_ID, fromISO, toISO);
-    
+
     // Convertir ocupados a getTime() de fecha local
     const ocupadosHoras = ocupados.map(o => new Date(o.date).getTime());
 
     slotsContainer.innerHTML = '';
-    
+
     const availableSlots = baseSlots.filter(slot => !ocupadosHoras.includes(slot.getTime()));
 
     if (availableSlots.length === 0) {
@@ -154,16 +154,16 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.className = 'slot-btn';
       // Solo mostrar hora
       btn.textContent = slot.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-      
+
       btn.addEventListener('click', () => {
         // Deseleccionar otros
         document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
         btn.classList.add('selected');
-        
+
         selectedDateTime = slot;
         selectedDateStr.textContent = slot.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         selectedTimeStr.textContent = btn.textContent;
-        
+
         bookingFormContainer.style.display = 'block';
         // Animación suave
         bookingFormContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -202,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         bookingForm.style.display = 'none';
         // Mostrar mensaje de éxito superior
-        bookingFormContainer.innerHTML = ''; 
+        bookingFormContainer.innerHTML = '';
         bookingSuccess.style.display = 'block';
       } catch (error) {
         console.error(error);
