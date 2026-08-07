@@ -13,72 +13,7 @@
     href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;1,400&family=Work+Sans:wght@400;500;600;700&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
-  <!--Añadir script de supabase para conectar calendarios-->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    const SUPABASE_URL = 'https://qgcywuzantcgoitrybwb.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_DtYokgl1tTfps9MslC41LQ_l5SdvBG3';
-    const { createClient } = window.supabase;
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    async function getSlotsOcupados(professionalId, fromISO, toISO) {
-      const { data, error } = await supabase
-        .from('appointments_slots_public')
-        .select('professional_id,date,status')
-        .eq('professional_id', professionalId)
-        .gte('date', fromISO)
-        .lte('date', toISO);
-
-      if (error) throw error;
-      return data || [];
-    }
-
-    async function getOrCreatePatient({ dni, first_name, last_name, birth_date, phone, email }) {
-      // Necesitas dni obligatorio (tu schema lo exige: NOT NULL UNIQUE)
-      // Si no tienes DNI en UI, crea un DNI “virtual” (ej. hash del email) de forma consistente.
-      const { data: existing } = await supabase
-        .from('patients')
-        .select('id')
-        .eq('dni', dni)
-        .maybeSingle();
-
-      if (existing?.id) return existing.id;
-
-      const { data, error } = await supabase
-        .from('patients')
-        .insert([{
-          dni,
-          first_name,
-          last_name,
-          birth_date,
-          phone: phone || null,
-          email: email || null
-        }])
-        .select('id')
-        .single();
-
-      if (error) throw error;
-      return data.id;
-    }
-
-    async function reservar({ patient, professionalId, dateISO, reason }) {
-      // Forzamos status pendinte para evitar que anon inserte estados raros
-      const { data, error } = await supabase
-        .from('appointments')
-        .insert([{
-          patient_id: patient,
-          professional_id: professionalId,
-          date: dateISO,
-          status: 'pendiente',
-          reason: reason || null
-        }])
-        .select('id')
-        .single();
-
-      if (error) throw error;
-      return data;
-    }
-  </script>
 
 </head>
 

@@ -65,7 +65,50 @@
     <section class="section-alt">
       <div class="container contact-grid">
         <div>
-          <form id="contact-form" novalidate>
+          <h3>Reserva tu sesión directamente</h3>
+          <p style="margin-bottom: 2rem; color: #555;">Elige la fecha y hora que mejor te venga. Mi calendario se sincroniza automáticamente para mostrarte solo los huecos disponibles.</p>
+          
+          <div class="booking-widget">
+            <div class="booking-step" id="booking-step-1">
+              <label for="booking-date" class="booking-label">1. Selecciona una fecha:</label>
+              <input type="date" id="booking-date" class="booking-input">
+              <div id="booking-slots" class="booking-slots-container"></div>
+            </div>
+
+            <div class="booking-step" id="booking-form-container" style="display: none; margin-top: 2rem;">
+              <h4 style="margin-bottom: 1rem; color: var(--primary);">2. Completa tus datos para el <span id="selected-date-str"></span> a las <span id="selected-time-str"></span></h4>
+              <form id="booking-form" novalidate>
+                <div class="form-field">
+                  <label for="b-nombre">Nombre *</label>
+                  <input type="text" id="b-nombre" required>
+                </div>
+                <div class="form-field">
+                  <label for="b-apellidos">Apellidos *</label>
+                  <input type="text" id="b-apellidos" required>
+                </div>
+                <div class="form-field">
+                  <label for="b-email">Correo electrónico *</label>
+                  <input type="email" id="b-email" required>
+                </div>
+                <div class="form-field">
+                  <label for="b-telefono">Teléfono</label>
+                  <input type="tel" id="b-telefono">
+                </div>
+                <div class="form-field">
+                  <label for="b-mensaje">Motivo de la consulta (breve)</label>
+                  <textarea id="b-mensaje"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Confirmar Reserva</button>
+              </form>
+            </div>
+
+            <div id="booking-success" class="form-success" style="display: none;">
+              ¡Reserva completada con éxito! La cita ha sido guardada. Te contactaré pronto para confirmar.
+            </div>
+          </div>
+
+          <h3 style="margin-top: 3rem;">O si lo prefieres, envíame un mensaje</h3>
+          <form id="contact-form" novalidate style="margin-top: 1.5rem;">
             <div class="form-field">
               <label for="nombre">Nombre</label>
               <input type="text" id="nombre" name="nombre" required>
@@ -151,6 +194,8 @@
     </div>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-booking.js"></script>
   <script src="js/script.js"></script>
 </body>
 
