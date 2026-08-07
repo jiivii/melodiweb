@@ -201,6 +201,25 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-booking.js"></script>
   <script src="js/script.js"></script>
+  <script>async function testBooking() {
+
+      const result = await reservar({
+        first_name: "Juan",
+        last_name: "Prueba",
+        email: "juanprueba@test.com",
+        phone: "600000000",
+        birth_date: "1990-01-01",
+        dni: null,
+        dateISO: "2026-08-20T10:00:00+00:00",
+        reason: "Prueba web 2"
+      });
+
+
+      console.log(result);
+
+    }
+
+    testBooking();</script>
 </body>
 
 </html>

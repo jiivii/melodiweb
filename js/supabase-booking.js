@@ -1,6 +1,6 @@
 const SUPABASE_URL = 'https://qgcywuzantcgoitrybwb.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_DtYokgl1tTfps9MslC41LQ_l5SdvBG3';
-const PROFESSIONAL_ID = "a6be4177-3195-4885-a27c-0a7259ce1858"; // TODO: Cambiar por tu ID real
+const PROFESSIONAL_ID = "a6be4177-3195-4885-a27c-0a7259ce1858";
 
 const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
@@ -35,8 +35,7 @@ async function getSlotsOcupados(professionalId, fromISO, toISO) {
 }
 
 async function getOrCreatePatient({ first_name, last_name, email, phone }) {
-  // Generar un DNI ficticio basado en el email o teléfono para saltar la restricción NOT NULL
-  const dummyDni = email || phone || `anon_${Date.now()}`;
+  const dummyDni = `TEMP-${crypto.randomUUID()}`;
 
   const { data: existing } = await supabaseClient
     .from('patients')
@@ -62,20 +61,38 @@ async function getOrCreatePatient({ first_name, last_name, email, phone }) {
   return data.id;
 }
 
-async function reservar({ patient, professionalId, dateISO, reason }) {
-  const { data, error } = await supabaseClient
-    .from('appointments')
-    .insert([{
-      patient_id: patient,
-      professional_id: professionalId,
-      date: dateISO,
-      status: 'pendiente',
-      reason: reason || null
-    }])
-    .select('id')
-    .single();
+async function reservar({
+  first_name,
+  last_name,
+  email,
+  phone,
+  birth_date,
+  dni,
+  dateISO,
+  reason
+}) {
 
-  if (error) throw error;
+  const { data, error } = await supabaseClient.rpc(
+    'create_public_appointment',
+    {
+      p_first_name: first_name,
+      p_last_name: last_name,
+      p_email: email || null,
+      p_phone: phone || null,
+      p_birth_date: birth_date || null,
+      p_dni: dni || null,
+      p_date: dateISO,
+      p_reason: reason || null
+    }
+  );
+
+
+  if (error) {
+    console.error('Error creando cita:', error);
+    throw error;
+  }
+
+
   return data;
 }
 
