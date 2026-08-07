@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mélodi Villarroya | Psicóloga Sanitaria en Zaragoza</title>
+  <meta name="description"
+    content="Psicóloga sanitaria colegiada en Zaragoza. Terapia individual, infanto-juvenil, de grupo y online para adultos, niños y personas mayores.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;1,400&family=Work+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <!--Añadir script de supabase para conectar calendarios-->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = 'https://qgcywuzantcgoitrybwb.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_DtYokgl1tTfps9MslC41LQ_l5SdvBG3';
+    const { createClient } = window.supabase;
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function getSlotsOcupados(professionalId, fromISO, toISO) {
+      const { data, error } = await supabase
+        .from('appointments_slots_public')
+        .select('professional_id,date,status')
+        .eq('professional_id', professionalId)
+        .gte('date', fromISO)
+        .lte('date', toISO);
+
+      if (error) throw error;
+      return data || [];
+    }
+
+    async function getOrCreatePatient({ dni, first_name, last_name, birth_date, phone, email }) {
+      // Necesitas dni obligatorio (tu schema lo exige: NOT NULL UNIQUE)
+      // Si no tienes DNI en UI, crea un DNI “virtual” (ej. hash del email) de forma consistente.
+      const { data: existing } = await supabase
+        .from('patients')
+        .select('id')
+        .eq('dni', dni)
+        .maybeSingle();
+
+      if (existing?.id) return existing.id;
+
+      const { data, error } = await supabase
+        .from('patients')
+        .insert([{
+          dni,
+          first_name,
+          last_name,
+          birth_date,
+          phone: phone || null,
+          email: email || null
+        }])
+        .select('id')
+        .single();
+
+      if (error) throw error;
+      return data.id;
+    }
+
+    async function reservar({ patient, professionalId, dateISO, reason }) {
+      // Forzamos status pendinte para evitar que anon inserte estados raros
+      const { data, error } = await supabase
+        .from('appointments')
+        .insert([{
+          patient_id: patient,
+          professional_id: professionalId,
+          date: dateISO,
+          status: 'pendiente',
+          reason: reason || null
+        }])
+        .select('id')
+        .single();
+
+      if (error) throw error;
+      return data;
+    }
+  </script>
+
+</head>
+
+<body>
+
+  <header class="site-header">
+    <div class="nav-wrap">
+      <a href="index.html" class="brand">
+        <span class="brand-name">Mélodi Villarroya</span>
+        <span class="brand-tag">Psicóloga Sanitaria</span>
+      </a>
+
+      <button class="nav-toggle" aria-label="Abrir menú" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
+
+      <ul class="nav-links">
+        <li><a href="index.html" class="nav-link is-active">Inicio</a></li>
+        <li class="has-dropdown">
+          <button class="nav-link" aria-expanded="false">Servicios
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+          <div class="dropdown">
+            <a href="servicios-infantil.html">Infantil y juvenil</a>
+            <a href="servicios-adultos.html">Adultos</a>
+            <a href="servicios-tercera-edad.html">Tercera edad</a>
+          </div>
+        </li>
+        <li><a href="tarifas.html" class="nav-link">Tarifas</a></li>
+        <li><a href="sobre-mi.html" class="nav-link">Sobre mí</a></li>
+        <li><a href="contacto.html" class="nav-link">Contacto</a></li>
+        <li class="nav-cta"><a href="contacto.html" class="btn btn-primary">Pide tu primera sesión</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="container hero-grid">
+        <div>
+          <p class="eyebrow">Psicóloga sanitaria · Colegiada A-03706 · Zaragoza</p>
+          <h1>Un espacio tranquilo para pensar mejor y sentirte mejor</h1>
+          <p class="lede">Acompaño a niños, adultos y personas mayores en procesos de terapia individual, familiar y de
+            grupo, siempre desde la evidencia científica y con un trato cercano.</p>
+          <blockquote class="hero-quote">
+            "La felicidad de tu vida depende de la calidad de tus pensamientos."
+            <span>Marco Aurelio</span>
+          </blockquote>
+          <div class="hero-actions">
+            <a href="contacto.html" class="btn btn-primary">Primera consulta gratuita</a>
+            <a href="sobre-mi.html" class="btn btn-outline">Conóceme</a>
+          </div>
+        </div>
+
+        <div class="breathing" aria-hidden="true">
+          <div class="ring r1"></div>
+          <div class="ring r2"></div>
+          <div class="ring r3"></div>
+          <div class="core"></div>
+          <span class="label">Respira. Estás en un lugar seguro.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SERVICIOS -->
+    <section class="section-alt">
+      <div class="container">
+        <div class="section-head">
+          <p class="eyebrow">Servicios psicológicos</p>
+          <h2>Terapia adaptada a cada etapa de la vida</h2>
+        </div>
+
+        <div class="card-grid">
+          <div class="card">
+            <svg class="icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6">
+              <circle cx="17" cy="16" r="6" />
+              <circle cx="33" cy="16" r="6" />
+              <path d="M6 40c0-7 5-12 11-12s11 5 11 12" />
+              <path d="M20 40c0-7 5-12 13-12s11 5 11 12" />
+            </svg>
+            <h3>Terapia grupal</h3>
+            <p>Sesiones compartidas para trabajar habilidades sociales, apoyo mutuo y crecimiento personal en grupo.</p>
+          </div>
+          <div class="card">
+            <svg class="icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6">
+              <circle cx="24" cy="16" r="8" />
+              <path d="M8 40c0-9 7-16 16-16s16 7 16 16" />
+            </svg>
+            <h3>Terapia individual</h3>
+            <p>Un espacio personalizado y confidencial para trabajar aquello que te preocupa, a tu ritmo.</p>
+          </div>
+          <div class="card">
+            <svg class="icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6">
+              <circle cx="24" cy="14" r="6" />
+              <path d="M12 38c0-7 5-12 12-12s12 5 12 12" />
+              <path d="M24 4v4M18 6l2 3M30 6l-2 3" />
+            </svg>
+            <h3>Terapia infanto-juvenil</h3>
+            <p>Intervención temprana para el desarrollo emocional, social y conductual de niños y adolescentes.</p>
+          </div>
+          <div class="card">
+            <svg class="icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6">
+              <rect x="8" y="10" width="32" height="22" rx="3" />
+              <path d="M18 38h12M24 32v6" />
+              <path d="M17 22c4-4 10-4 14 0" />
+            </svg>
+            <h3>Terapia online</h3>
+            <p>La misma cercanía y rigor profesional desde donde te encuentres, con total flexibilidad de horarios.</p>
+          </div>
+          <div class="card">
+            <svg class="icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6"
+              stroke-linecap="round" stroke-linejoin="round">
+
+              <circle cx="18" cy="16" r="4" />
+              <circle cx="30" cy="16" r="4" />
+
+              <path d="M11 32c0-4 3-7 7-7s7 3 7 7" />
+              <path d="M23 32c0-4 3-7 7-7s7 3 7 7" />
+
+            </svg>
+
+            <h3>Terapia de pareja</h3>
+            <p>Para mejorar la comunicación, fortalecer el vinculo y afrontar situaciones en crisis.
+            </p>
+          </div>
+          <div class="card">
+            <svg class="icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6"
+              stroke-linecap="round" stroke-linejoin="round">
+
+              <circle cx="16" cy="15" r="4" />
+              <circle cx="32" cy="15" r="4" />
+              <circle cx="24" cy="20" r="3" />
+
+              <path d="M8 34c0-5 4-8 8-8s8 3 8 8" />
+              <path d="M24 34c0-5 4-8 8-8s8 3 8 8" />
+              <path d="M18 34c0-4 3-6 6-6s6 2 6 6" />
+
+            </svg>
+            <h3>Terapia familiar</h3>
+            <p>Facilitando la comunicación, la resolucion de conflictos y la adaptacion a momentos de cambio.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RECURSOS -->
+    <section>
+      <div class="container">
+        <div class="section-head">
+          <p class="eyebrow">Información y recursos</p>
+          <h2>Lecturas para acompañar tu proceso</h2>
+        </div>
+
+        <div class="resource-grid">
+          <article class="resource-card">
+            <div class="resource-media">
+              <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M8 40c0-7 5-12 11-12s11 5 11 12" />
+                <circle cx="19" cy="16" r="6" />
+                <path d="M30 40c0-6 4-10 9-10s9 4 9 10" opacity="0.6" />
+                <circle cx="39" cy="20" r="5" opacity="0.6" />
+              </svg>
+            </div>
+            <div class="resource-body">
+              <span class="resource-date">17 de enero de 2023</span>
+              <h3>Explorar las dinámicas familiares</h3>
+              <p>Cómo los patrones de comunicación en casa influyen en el bienestar de cada miembro de la familia.</p>
+            </div>
+          </article>
+
+          <article class="resource-card">
+            <div class="resource-media">
+              <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M24 6c6 6 6 12 0 18-6-6-6-12 0-18Z" />
+                <path d="M12 30c4-3 8-3 12 0M24 30c4-3 8-3 12 0" />
+              </svg>
+            </div>
+            <div class="resource-body">
+              <span class="resource-date">17 de enero de 2019</span>
+              <h3>Lidiar con el estrés: 7 consejos prácticos</h3>
+              <p>Estrategias sencillas para atravesar los momentos más difíciles con más calma y claridad.</p>
+            </div>
+          </article>
+
+          <article class="resource-card">
+            <div class="resource-media">
+              <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M24 42c9-6 16-13 16-21a10 10 0 0 0-16-8 10 10 0 0 0-16 8c0 8 7 15 16 21Z" />
+              </svg>
+            </div>
+            <div class="resource-body">
+              <span class="resource-date">17 de enero de 2023</span>
+              <h3>Trauma y adicción: herramientas para la recuperación</h3>
+              <p>Un acercamiento compasivo a los procesos de recuperación tras experiencias traumáticas.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section>
+      <div class="container">
+        <div class="cta-band">
+          <div>
+            <h2>¿Empezamos a trabajar juntxs?</h2>
+            <p>La primera sesión informativa es gratuita, sin compromiso.</p>
+          </div>
+          <a href="contacto.html" class="btn btn-primary">Reservar primera sesión</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACTO RÁPIDO -->
+    <section class="section-alt">
+      <div class="container contact-grid">
+        <div>
+          <p class="eyebrow">Consulta</p>
+          <h2>Cuéntame en qué puedo ayudarte</h2>
+          <p class="lede">Responderé a tu mensaje lo antes posible para concertar tu primera sesión gratuita.</p>
+
+          <form id="contact-form" novalidate>
+            <div class="form-field">
+              <label for="nombre">Nombre</label>
+              <input type="text" id="nombre" name="nombre" required>
+            </div>
+            <div class="form-field">
+              <label for="email">Correo electrónico</label>
+              <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-field">
+              <label for="mensaje">Mensaje</label>
+              <textarea id="mensaje" name="mensaje" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Enviar</button>
+            <div class="form-success" id="form-success">¡Gracias por tu mensaje! Te responderé lo antes posible.</div>
+          </form>
+        </div>
+
+        <div class="contact-info-card">
+          <h3>Contacto</h3>
+          <div class="contact-info-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0 1 18 0Z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+            <p>Zaragoza, España</p>
+          </div>
+          <div class="contact-info-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <rect x="3" y="5" width="18" height="14" rx="2" />
+              <path d="m3 7 9 6 9-6" />
+            </svg>
+            <p>Escríbeme desde el formulario y te contesto en menos de 48h.</p>
+          </div>
+          <div class="contact-info-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M12 2a7 7 0 0 0-7 7v3l-2 4h18l-2-4v-3a7 7 0 0 0-7-7Z" />
+              <path d="M9 20a3 3 0 0 0 6 0" />
+            </svg>
+            <p>Nº Colegiada: A-03706</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <h4>Mélodi Villarroya</h4>
+          <p>Psicóloga Sanitaria · Zaragoza, España</p>
+          <p>Nº Colegiada: A-03706</p>
+        </div>
+        <div class="footer-col">
+          <h4>Navegación</h4>
+          <a href="servicios-infantil.html">Infantil y juvenil</a>
+          <a href="servicios-adultos.html">Adultos</a>
+          <a href="servicios-tercera-edad.html">Tercera edad</a>
+          <a href="tarifas.html">Tarifas</a>
+        </div>
+        <div class="footer-col">
+          <h4>Más</h4>
+          <a href="sobre-mi.html">Sobre mí</a>
+          <a href="contacto.html">Contacto</a>
+          <a href="legal.html">Aviso legal y privacidad</a>
+        </div>
+      </div>
+      <div class="footer-legal">
+        <span>© 2026 Mélodi Villarroya. Todos los derechos reservados.</span>
+        <a href="legal.html">Política de privacidad · Política de cookies · Aviso legal</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/script.js"></script>
+</body>
+
+</html>
