@@ -13,19 +13,7 @@
     href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;1,400&family=Work+Sans:wght@400;500;600;700&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase-booking.js"></script>
-  <script>async function testSlots() {
-      const { data, error } = await supabase
-        .from('appointments_slots_public')
-        .select('*')
-        .limit(10);
 
-      console.log(data);
-      console.error(error);
-    }
-
-    testSlots();</script>
 
 </head>
 

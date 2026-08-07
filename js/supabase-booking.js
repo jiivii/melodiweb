@@ -7,6 +7,17 @@ let supabase = null;
 if (window.supabase) {
   supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 }
+async function testSlots() {
+  const { data, error } = await supabase
+    .from('appointments_slots_public')
+    .select('*')
+    .limit(10);
+
+  console.log(data);
+  console.error(error);
+}
+
+testSlots();
 
 async function getSlotsOcupados(professionalId, fromISO, toISO) {
   if (!supabase) return [];
