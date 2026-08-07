@@ -6,17 +6,7 @@ const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_ANON_KEY
 );
-async function testSlots() {
-  const { data, error } = await supabaseClient
-    .from('appointments_slots_public')
-    .select('*')
-    .limit(10);
 
-  console.log(data);
-  console.error(error);
-}
-
-testSlots();
 
 async function getSlotsOcupados(professionalId, fromISO, toISO) {
   if (!supabase) return [];
@@ -219,18 +209,29 @@ document.addEventListener('DOMContentLoaded', () => {
       const reason = document.getElementById('b-mensaje').value;
 
       try {
-        const patientId = await getOrCreatePatient({ first_name, last_name, email, phone });
-        await reservar({
-          patient: patientId,
-          professionalId: PROFESSIONAL_ID,
-          dateISO: selectedDateTime.toISOString(), // Guardado en UTC en Supabase
+
+        const result = await reservar({
+          first_name,
+          last_name,
+          email,
+          phone,
+          birth_date: null,
+          dni: null,
+          dateISO: selectedDateTime.toISOString(),
           reason
         });
 
+
+        if (!result.success) {
+          throw new Error(result.message);
+        }
+
+
         bookingForm.style.display = 'none';
-        // Mostrar mensaje de éxito superior
         bookingFormContainer.innerHTML = '';
         bookingSuccess.style.display = 'block';
+
+
       } catch (error) {
         console.error(error);
         alert('Hubo un error al procesar tu reserva. Por favor, inténtalo de nuevo más tarde.');
