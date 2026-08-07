@@ -2,13 +2,12 @@ const SUPABASE_URL = 'https://qgcywuzantcgoitrybwb.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_DtYokgl1tTfps9MslC41LQ_l5SdvBG3';
 const PROFESSIONAL_ID = "a6be4177-3195-4885-a27c-0a7259ce1858"; // TODO: Cambiar por tu ID real
 
-// Inicializar Supabase si la librería está cargada
-let supabase = null;
-if (window.supabase) {
-  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-}
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
+);
 async function testSlots() {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from('appointments_slots_public')
     .select('*')
     .limit(10);
@@ -21,7 +20,7 @@ testSlots();
 
 async function getSlotsOcupados(professionalId, fromISO, toISO) {
   if (!supabase) return [];
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from('appointments_slots_public')
     .select('professional_id,date,status')
     .eq('professional_id', professionalId)
@@ -39,7 +38,7 @@ async function getOrCreatePatient({ first_name, last_name, email, phone }) {
   // Generar un DNI ficticio basado en el email o teléfono para saltar la restricción NOT NULL
   const dummyDni = email || phone || `anon_${Date.now()}`;
 
-  const { data: existing } = await supabase
+  const { data: existing } = await supabaseClient
     .from('patients')
     .select('id')
     .eq('dni', dummyDni)
@@ -47,7 +46,7 @@ async function getOrCreatePatient({ first_name, last_name, email, phone }) {
 
   if (existing?.id) return existing.id;
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from('patients')
     .insert([{
       dni: dummyDni,
@@ -64,7 +63,7 @@ async function getOrCreatePatient({ first_name, last_name, email, phone }) {
 }
 
 async function reservar({ patient, professionalId, dateISO, reason }) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from('appointments')
     .insert([{
       patient_id: patient,
